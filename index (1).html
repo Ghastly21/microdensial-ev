@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LMS Mikrokredensial – Persiapan Servis Kendaraan Listrik</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--bg:#f4f6fa;--card:#fff;--tx:#1b2433;--mut:#5d6b82;--pri:#0b3b75;--pt:#fff;--acc:#f0a81c;--ok:#1f8f4e;--bad:#c0392b;--bd:#dde3ee;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1624;--card:#18223a;--tx:#e8edf7;--mut:#9aa8c2;--pri:#6aa6f0;--pt:#0b1426;--ok:#4cc27f;--bad:#ef6b5b;--bd:#2a3856}}
+:root[data-theme="dark"]{--bg:#0f1624;--card:#18223a;--tx:#e8edf7;--mut:#9aa8c2;--pri:#6aa6f0;--pt:#0b1426;--ok:#4cc27f;--bad:#ef6b5b;--bd:#2a3856}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:#0b3b75;color:#fff;padding:12px 18px;border-bottom:4px solid var(--acc);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+header b{font-size:1.05rem}header small{display:block;opacity:.8}
+nav{display:flex;gap:6px;flex-wrap:wrap;max-width:1050px;margin:12px auto 0;padding:0 14px}
+nav button{background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:20px;padding:6px 14px;cursor:pointer;font:inherit}
+nav button.on{background:var(--pri);color:var(--pt);border-color:var(--pri)}
+main{max-width:1050px;margin:0 auto;padding:14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:14px}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+h2{margin:.1em 0 .4em;color:var(--pri);font-size:1.3rem}h3{margin:.8em 0 .3em;font-size:1rem}
+.btn{background:var(--pri);color:var(--pt);border:0;border-radius:8px;padding:8px 14px;cursor:pointer;font:inherit}
+.btn.s{background:none;color:var(--pri);border:1px solid var(--pri)}.btn.d{background:var(--bad);color:#fff}.btn:disabled{opacity:.45;cursor:not-allowed}
+input,select,textarea{width:100%;padding:8px 10px;margin:3px 0 8px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font:inherit}
+label{font-size:.85rem;color:var(--mut)}
+.bar{height:8px;background:var(--bd);border-radius:5px;overflow:hidden;margin:6px 0}.bar i{display:block;height:100%;background:var(--ok)}
+.tag{display:inline-block;background:var(--acc);color:#222;border-radius:20px;padding:1px 10px;font-size:.75rem;font-weight:600}
+.tag.ok{background:var(--ok);color:#fff}.mut{color:var(--mut);font-size:.85rem}
+.tbl{width:100%;border-collapse:collapse;display:block;overflow-x:auto}.tbl td,.tbl th{padding:7px 9px;border-bottom:1px solid var(--bd);text-align:left;white-space:nowrap}
+.note{border-left:4px solid var(--acc);background:color-mix(in srgb,var(--acc) 14%,transparent);padding:8px 12px;border-radius:6px;margin:10px 0}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row>*{flex:0 0 auto}
+.q label{display:block;color:var(--tx);font-size:1rem;padding:3px 0}.q input{width:auto;margin-right:8px}
+.cert{border:6px double var(--acc);padding:28px 16px;text-align:center;border-radius:6px;background:var(--card)}
+.cert h1{margin:0;color:var(--pri);letter-spacing:4px}.cert .n{font-size:1.8rem;font-weight:700;margin:10px 0}
+.login{max-width:430px;margin:24px auto}
+@media print{header,nav,.noprint{display:none!important}body{background:#fff}.cert{color:#000}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const K="lms_mk_v1";let DB,U=null,V={p:"home"};
+const $=i=>document.getElementById(i),val=i=>$(i).value.trim(),uid=()=>Math.random().toString(36).slice(2,8);
+const e=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const RL={admin:"Admin / Penyelenggara",instruktur:"Instruktur / Dosen",peserta:"Peserta / Mahasiswa"};
+function seed(){const mk=(r,ns)=>ns.map((n,i)=>({id:r+(i+1),nama:n,email:r+(i+1)+"@demo.id",pass:"demo123",role:r}));
+const users=[...mk("admin",["Admin Utama","Admin Akademik","Admin Sertifikasi"]),...mk("instruktur",["Dr. Budi Santoso, M.T.","Ir. Sari Wulandari, M.Eng.","Agus Prasetyo, S.T., M.T."]),...mk("peserta",["Andi Pratama","Bella Safitri","Citra Lestari","Dimas Aditya","Eka Putri"])];
+const c1={id:"c1",ins:"instruktur1",judul:"Persiapan Servis Kendaraan Listrik Ringan",pg:75,
+deskripsi:"Mikrokredensial unit kompetensi persiapan servis pada SKKNI Kepmenaker No. 8 Tahun 2024 (Layanan Servis Kendaraan Listrik Ringan).",
+silabus:"1. Penerimaan kendaraan & keluhan\n2. K3 tegangan tinggi\n3. Peralatan & perlengkapan\n4. Work order & estimasi\n5. Persiapan area & kendaraan",
+mods:[
+{id:"m1",judul:"Menerima Kendaraan & Keluhan",tipe:"video",url:"https://example.com/video-modul-1",isi:"<p>Catat identitas pelanggan, nomor polisi, VIN, odometer, level baterai (SoC), riwayat servis, dan kondisi fisik kendaraan (difoto bersama pelanggan).</p><p>Ulangi keluhan ke pelanggan (<i>read-back</i>) agar tidak terjadi salah paham.</p>"},
+{id:"m2",judul:"K3 & Bahaya Tegangan Tinggi",tipe:"pdf",url:"https://example.com/modul-k3.pdf",isi:"<p>Kabel oranye = sistem tegangan tinggi (HV). APD minimum: sarung tangan isolasi + pelindung kulit, sepatu safety isolasi, pelindung wajah. Lepas logam dari tubuh, periksa APD sebelum dipakai, pasang rambu bahaya HV.</p>"},
+{id:"m3",judul:"Peralatan & Perlengkapan Servis",tipe:"teks",url:"",isi:"<p>Alat tangan terisolasi, multimeter CAT III/IV, insulation tester (megger), clamp meter, scan tool, ganjal roda, karpet isolasi. Cek kondisi isolasi dan kalibrasi alat.</p>"},
+{id:"m4",judul:"Work Order & Estimasi",tipe:"pdf",url:"https://example.com/template-wo.pdf",isi:"<p>Work order memuat data pelanggan/kendaraan, keluhan, daftar pekerjaan, estimasi biaya dan waktu, serta persetujuan pelanggan. Pekerjaan tambahan wajib disetujui pelanggan lebih dulu.</p>"},
+{id:"m5",judul:"Persiapan Area & Kendaraan",tipe:"video",url:"https://example.com/video-modul-5",isi:"<p>Urutan aman: kendaraan OFF → kunci/remote dijauhkan → lepas service plug/disconnect HV sesuai SOP → tunggu pengosongan kapasitor → zero-voltage check → baru dikerjakan.</p>"}],
+qs:[{q:"Tujuan mencatat keluhan dengan bahasa pelanggan adalah…",o:["Mempercepat pembayaran","Menghindari salah paham & menentukan lingkup kerja","Mengurangi foto","Menaikkan biaya"],a:1},
+{q:"Kabel oranye pada kendaraan listrik umumnya menandakan…",o:["Sistem 12 V","Sistem tegangan tinggi","Kabel audio","Kabel sensor"],a:1},
+{q:"Sebelum memakai sarung tangan isolasi harus…",o:["Langsung dipakai","Diperiksa retak/bocor","Dibasahi","Dipakai bersama cincin logam"],a:1},
+{q:"Multimeter untuk kendaraan listrik sebaiknya berating…",o:["Tanpa kategori","CAT III/IV","Terendah","Hanya untuk AA"],a:1},
+{q:"Pekerjaan di luar work order harus…",o:["Langsung dikerjakan","Disetujui pelanggan dulu","Disembunyikan","Tidak dicatat"],a:1},
+{q:"Langkah wajib sebelum menyentuh komponen HV…",o:["Menebak tegangan","Zero-voltage check setelah disconnect HV","Mengisi daya penuh","Memakai sandal"],a:1},
+{q:"Fungsi ganjal roda adalah…",o:["Hiasan","Mencegah kendaraan bergerak tak terduga","Menambah tegangan","Mendinginkan baterai"],a:1},
+{q:"Fungsi insulation tester (megger)…",o:["Mengukur kecepatan","Mengukur tahanan isolasi","Mengisi baterai","Menimbang"],a:1}]};
+const c2={id:"c2",ins:"instruktur2",judul:"Dasar K3 Kendaraan Listrik",pg:70,deskripsi:"Pengantar singkat keselamatan kerja pada kendaraan listrik.",silabus:"1. Bahaya listrik\n2. APD",
+mods:[{id:"m1",judul:"Bahaya Listrik",tipe:"teks",url:"",isi:"<p>Risiko: sengatan listrik, arc flash, panas/api baterai.</p>"},{id:"m2",judul:"Penggunaan APD",tipe:"teks",url:"",isi:"<p>Sarung tangan isolasi, sepatu isolasi, face shield.</p>"}],
+qs:[{q:"Risiko utama sistem HV adalah…",o:["Kebisingan","Sengatan listrik & arc flash","Debu","Cuaca"],a:1},{q:"APD wajah untuk area HV…",o:["Topi","Face shield","Masker kain","Tidak perlu"],a:1}]};
+return{users,courses:[c1,c2],prog:{
+"peserta1_c1":{done:["m1","m2","m3","m4","m5"],score:87.5,passed:true,date:"2026-10-10",no:"MK/2026/0001"},"peserta2_c1":{done:["m1","m2"],score:null,passed:false}}}}
+function load(){try{DB=JSON.parse(localStorage.getItem(K))}catch(x){}if(!DB)DB=seed()}
+function save(){try{localStorage.setItem(K,JSON.stringify(DB))}catch(x){}}
+const C=id=>DB.courses.find(c=>c.id==id),UN=id=>(DB.users.find(u=>u.id==id)||{}).nama||"-";
+const pr=(u,c)=>DB.prog[u+"_"+c]||(DB.prog[u+"_"+c]={done:[],score:null,passed:false});
+const pct=(u,c)=>Math.round(pr(u,c).done.length/(C(c).mods.length||1)*100);
+function go(p,a,b){V={p,a,b};render();scrollTo(0,0)}
+function login(){const u=DB.users.find(x=>x.email==val("em").toLowerCase()&&x.pass==$("pw").value);if(!u)return $("er").textContent="Email atau kata sandi salah.";U=u;V={p:"home"};render()}
+function reg(){const n=val("rn"),m=val("em").toLowerCase(),p=$("pw").value;if(!n||!m||p.length<4)return $("er").textContent="Isi nama (halaman daftar), email, dan sandi min. 4 karakter.";
+if(DB.users.some(x=>x.email==m))return $("er").textContent="Email sudah terdaftar.";const u={id:"peserta"+uid(),nama:n,email:m,pass:p,role:"peserta"};DB.users.push(u);save();U=u;render()}
+function loginView(){return`<div class="login card"><h2>🔧 LMS Mikrokredensial</h2><p class="mut">Persiapan Servis Kendaraan Listrik Ringan • SKKNI Kepmenaker No. 8/2024</p>
+<label>Nama (hanya untuk daftar)</label><input id="rn" placeholder="Nama lengkap"><label>Email</label><input id="em" placeholder="peserta1@demo.id"><label>Kata sandi</label><input id="pw" type="password" placeholder="demo123">
+<div class="row"><button class="btn" onclick="login()">Masuk</button><button class="btn s" onclick="reg()">Daftar sebagai Peserta</button></div><p id="er" style="color:var(--bad)"></p>
+<h3>Akun demo (sandi: demo123)</h3><div class="row">${["admin1","instruktur1","instruktur2","peserta1","peserta2","peserta3"].map(x=>`<button class="btn s" onclick="$('em').value='${x}@demo.id';$('pw').value='demo123'">${x}</button>`).join("")}</div>
+<p class="mut">Total: 3 admin, 3 instruktur, 5 peserta.</p></div>`}
+function nav(){const t={admin:[["home","Dashboard"],["users","Pengguna"],["courses","Semua Kelas"]],instruktur:[["home","Kelas Saya"]],peserta:[["home","Kelas Saya & Katalog"]]}[U.role];
+return`<nav>${t.map(x=>`<button class="${V.p==x[0]?"on":""}" onclick="go('${x[0]}')">${x[1]}</button>`).join("")}</nav>`}
+function render(){const a=$("app");if(!U){a.innerHTML=loginView();return}
+const v={admin:{home:aHome,users:aUsers,courses:aCourses},instruktur:{home:iHome,edit:iEdit},peserta:{home:pHome,course:pCourse,learn:pLearn,quiz:pQuiz,cert:pCert}}[U.role][V.p]||(()=>"");
+a.innerHTML=`<header><div><b>🔧 LMS Mikrokredensial</b><small>${e(U.nama)} • ${RL[U.role]}</small></div><button class="btn s" style="color:#fff;border-color:#fff" onclick="U=null;render()">Keluar</button></header>${nav()}<main>${v()}</main>`}
+// ---------- PESERTA
+function pHome(){return`<h2>Katalog Pelatihan</h2><div class="g">${DB.courses.map(c=>{const p=pr(U.id,c.id);return`<div class="card"><span class="tag ${p.passed?"ok":""}">${p.passed?"LULUS":"Mikrokredensial"}</span><h3>${e(c.judul)}</h3><p class="mut">${e(c.deskripsi)}</p><p class="mut">Instruktur: ${e(UN(c.ins))} • ${c.mods.length} modul</p><div class="bar"><i style="width:${pct(U.id,c.id)}%"></i></div><div class="row"><span class="mut">${pct(U.id,c.id)}%</span><button class="btn" onclick="go('course','${c.id}')">${p.done.length?"Lanjutkan":"Mulai"}</button></div></div>`}).join("")}</div>`}
+function pCourse(){const c=C(V.a),p=pr(U.id,c.id),all=p.done.length==c.mods.length;
+return`<button class="btn s" onclick="go('home')">← Kembali</button><div class="card" style="margin-top:10px"><h2>${e(c.judul)}</h2><p>${e(c.deskripsi)}</p><h3>Silabus</h3><pre style="white-space:pre-wrap;font:inherit;margin:0">${e(c.silabus)}</pre><p class="mut">Passing grade: ${c.pg} • Instruktur: ${e(UN(c.ins))}</p></div>
+<div class="card"><h3>Modul</h3>${c.mods.map((m,i)=>`<div class="row" style="padding:6px 0;border-bottom:1px solid var(--bd)"><span>${p.done.includes(m.id)?"✅":"⬜"}</span><span style="flex:1">${i+1}. ${e(m.judul)} <span class="tag">${m.tipe}</span></span><button class="btn s" onclick="go('learn','${c.id}','${m.id}')">Buka</button></div>`).join("")}</div>
+<div class="card"><h3>Evaluasi & Sertifikat</h3>${p.score!=null?`<p>Nilai terakhir: <b>${p.score}</b> ${p.passed?'<span class="tag ok">LULUS</span>':'<span class="tag">Belum lulus</span>'}</p>`:""}
+<div class="row"><button class="btn" ${all?"":"disabled"} onclick="go('quiz','${c.id}')">Kerjakan Kuis</button><button class="btn s" ${p.passed?"":"disabled"} onclick="go('cert','${c.id}')">🎓 Sertifikat</button></div>${all?"":'<p class="mut">Selesaikan semua modul untuk membuka kuis.</p>'}</div>`}
+function pLearn(){const c=C(V.a),m=c.mods.find(x=>x.id==V.b),p=pr(U.id,c.id),i=c.mods.indexOf(m),n=c.mods[i+1];
+const med=m.tipe=="video"?`<div class="note">🎬 Video: <a href="${e(m.url)}" target="_blank" rel="noopener">${e(m.url)}</a> <span class="mut">(URL dummy)</span></div>`:m.tipe=="pdf"?`<div class="note">📄 Dokumen PDF: <a href="${e(m.url)}" target="_blank" rel="noopener">${e(m.url)}</a> <span class="mut">(URL dummy)</span></div>`:"";
+return`<button class="btn s" onclick="go('course','${c.id}')">← ${e(c.judul)}</button><div class="card" style="margin-top:10px"><span class="tag">Modul ${i+1}/${c.mods.length}</span><h2>${e(m.judul)}</h2>${med}${m.isi}
+<div class="row" style="margin-top:14px"><button class="btn" onclick="fin('${c.id}','${m.id}')">${p.done.includes(m.id)?"✓ Selesai":"Tandai selesai"}</button>${n?`<button class="btn s" onclick="go('learn','${c.id}','${n.id}')">Modul berikutnya →</button>`:""}</div></div>`}
+function fin(c,m){const p=pr(U.id,c);if(!p.done.includes(m))p.done.push(m);save();render()}
+function pQuiz(){const c=C(V.a);return`<button class="btn s" onclick="go('course','${c.id}')">← Kembali</button><div class="card" style="margin-top:10px"><h2>Kuis: ${e(c.judul)}</h2><p class="mut">Passing grade ${c.pg}. Pilih satu jawaban tiap soal.</p>
+${c.qs.map((q,i)=>`<div class="q"><b>${i+1}. ${e(q.q)}</b>${q.o.map((o,j)=>`<label><input type="radio" name="q${i}" value="${j}">${e(o)}</label>`).join("")}</div>`).join("")}<button class="btn" onclick="grade('${c.id}')">Kirim Jawaban</button><div id="rs"></div></div>`}
+function grade(id){const c=C(id),p=pr(U.id,id);let ok=0;c.qs.forEach((q,i)=>{const r=document.querySelector(`input[name=q${i}]:checked`);if(r&&+r.value==q.a)ok++});
+const s=Math.round(ok/c.qs.length*1000)/10;p.score=s;if(s>=c.pg&&!p.passed){p.passed=true;p.date=new Date().toISOString().slice(0,10);p.no="MK/2026/"+String(Object.values(DB.prog).filter(x=>x.no).length+1).padStart(4,"0")}save();
+$("rs").innerHTML=`<div class="note">Benar ${ok}/${c.qs.length} • Nilai <b>${s}</b> — ${s>=c.pg?"✅ LULUS. Sertifikat tersedia.":"❌ Belum mencapai passing grade, silakan ulangi."}</div><div class="row"><button class="btn" onclick="go('course','${id}')">Ke halaman kelas</button></div>`}
+function pCert(){const c=C(V.a),p=pr(U.id,c.id);return`<button class="btn s noprint" onclick="go('course','${c.id}')">← Kembali</button><div class="cert" style="margin-top:10px"><h1>SERTIFIKAT</h1><p>Diberikan kepada</p><div class="n">${e(U.nama)}</div><p>yang dinyatakan <b>LULUS</b> pada pelatihan mikrokredensial</p><h2>${e(c.judul)}</h2><p>Nilai: <b>${p.score}</b> • Tanggal: ${p.date}</p><p class="mut">No. ${p.no} • Mengacu pada SKKNI Kepmenaker No. 8 Tahun 2024</p></div>
+<div class="row noprint" style="margin-top:12px"><button class="btn" onclick="pdf('${c.id}')">⬇ Unduh PDF</button><button class="btn s" onclick="print()">🖨 Cetak / Simpan PDF</button></div>`}
+function pdf(id){try{const c=C(id),p=pr(U.id,id),d=new jspdf.jsPDF({orientation:"landscape",unit:"mm",format:"a4"}),m=148.5,T=(s,y,z,b)=>{d.setFont("helvetica",b?"bold":"normal");d.setFontSize(z);d.text(s,m,y,{align:"center"})};
+d.setDrawColor(11,59,117);d.setLineWidth(2);d.rect(8,8,281,194);d.setDrawColor(240,168,28);d.setLineWidth(.6);d.rect(12,12,273,186);
+T("SERTIFIKAT",45,34,1);T("Diberikan kepada",65,14);T(U.nama,85,28,1);T("yang dinyatakan LULUS pada pelatihan mikrokredensial",103,14);T(c.judul,120,20,1);
+T("Nilai: "+p.score+"   |   Tanggal: "+p.date,142,12);T("No. "+p.no,150,12);T("Mengacu pada SKKNI Kepmenaker No. 8 Tahun 2024",160,11);d.save("Sertifikat-"+p.no.replace(/\//g,"-")+".pdf")}catch(x){alert("PDF gagal dibuat di mode ini. Gunakan tombol Cetak / Simpan PDF.")}}
+// ---------- INSTRUKTUR
+function iHome(){const my=DB.courses.filter(c=>c.ins==U.id);return`<h2>Kelas Saya</h2><div class="g">${my.map(c=>`<div class="card"><h3>${e(c.judul)}</h3><p class="mut">${c.mods.length} modul • ${c.qs.length} soal • ${DB.users.filter(u=>u.role=="peserta"&&pr(u.id,c.id).done.length).length} peserta aktif</p><button class="btn" onclick="go('edit','${c.id}')">Kelola</button></div>`).join("")||'<p class="mut">Belum ada kelas.</p>'}</div>
+<div class="card"><h3>Buat kelas baru</h3><input id="nj" placeholder="Judul pelatihan"><button class="btn" onclick="addC()">Buat</button></div>`}
+function addC(){const j=val("nj");if(!j)return;const c={id:"c"+uid(),ins:U.id,judul:j,deskripsi:"",silabus:"",pg:75,mods:[],qs:[]};DB.courses.push(c);save();go("edit",c.id)}
+function iEdit(){const c=C(V.a);return`<button class="btn s" onclick="go('home')">← Kembali</button><div class="card" style="margin-top:10px"><h2>Kelola Kelas</h2><label>Judul</label><input id="ej" value="${e(c.judul)}"><label>Deskripsi</label><textarea id="ed" rows="2">${e(c.deskripsi)}</textarea><label>Silabus</label><textarea id="es" rows="4">${e(c.silabus)}</textarea><label>Passing grade</label><input id="eg" type="number" value="${c.pg}"><button class="btn" onclick="saveC('${c.id}')">Simpan</button></div>
+<div class="card"><h3>Modul / Materi</h3>${c.mods.map((m,i)=>`<div class="row" style="padding:4px 0"><span style="flex:1">${i+1}. ${e(m.judul)} <span class="tag">${m.tipe}</span></span><button class="btn d" onclick="del('${c.id}','mods',${i})">Hapus</button></div>`).join("")}
+<h3>Tambah modul</h3><input id="mj" placeholder="Judul modul"><select id="mt"><option value="video">Video (URL)</option><option value="pdf">PDF (URL)</option><option value="teks">Teks</option></select><input id="mu" placeholder="URL video/PDF (opsional)"><textarea id="mi" rows="3" placeholder="Isi/ringkasan materi (HTML sederhana boleh)"></textarea><button class="btn" onclick="addM('${c.id}')">Tambah</button></div>
+<div class="card"><h3>Bank Soal (pilihan ganda)</h3>${c.qs.map((q,i)=>`<div class="row" style="padding:4px 0"><span style="flex:1">${i+1}. ${e(q.q)}</span><button class="btn d" onclick="del('${c.id}','qs',${i})">Hapus</button></div>`).join("")}
+<h3>Tambah soal</h3><input id="qq" placeholder="Pertanyaan">${[0,1,2,3].map(i=>`<input id="o${i}" placeholder="Opsi ${"ABCD"[i]}">`).join("")}<select id="qa"><option value="0">Kunci: A</option><option value="1">Kunci: B</option><option value="2">Kunci: C</option><option value="3">Kunci: D</option></select><button class="btn" onclick="addQ('${c.id}')">Tambah</button></div>
+<div class="card"><h3>Peserta & Nilai</h3><table class="tbl"><tr><th>Nama</th><th>Progres</th><th>Nilai</th><th>Status</th></tr>${DB.users.filter(u=>u.role=="peserta").map(u=>{const p=pr(u.id,c.id);return`<tr><td>${e(u.nama)}</td><td>${pct(u.id,c.id)}%</td><td>${p.score??"-"}</td><td>${p.passed?"Lulus":"-"}</td></tr>`}).join("")}</table></div>`}
+function saveC(id){const c=C(id);c.judul=val("ej");c.deskripsi=val("ed");c.silabus=$("es").value;c.pg=+val("eg")||75;save();alert("Tersimpan.")}
+function addM(id){const j=val("mj");if(!j)return;C(id).mods.push({id:"m"+uid(),judul:j,tipe:val("mt"),url:val("mu"),isi:e(val("mi")).replace(/\n/g,"<br>")});save();render()}
+function addQ(id){const q=val("qq"),o=[0,1,2,3].map(i=>val("o"+i));if(!q||o.some(x=>!x))return alert("Lengkapi pertanyaan dan 4 opsi.");C(id).qs.push({q,o,a:+val("qa")});save();render()}
+function del(id,k,i){C(id)[k].splice(i,1);save();render()}
+// ---------- ADMIN
+function aHome(){const ps=Object.values(DB.prog);return`<h2>Dashboard</h2><div class="g">${[["Pengguna",DB.users.length],["Peserta",DB.users.filter(u=>u.role=="peserta").length],["Kelas",DB.courses.length],["Sertifikat terbit",ps.filter(p=>p.no).length]].map(x=>`<div class="card"><div class="mut">${x[0]}</div><div style="font-size:2rem;font-weight:700;color:var(--pri)">${x[1]}</div></div>`).join("")}</div>
+<div class="card"><h3>Data demo</h3><p class="mut">Kembalikan seluruh data ke kondisi awal (11 akun & 2 kelas).</p><button class="btn d" onclick="if(confirm('Reset semua data?')){DB=seed();save();render()}">Reset data demo</button></div>`}
+function aUsers(){return`<h2>Manajemen Pengguna</h2><div class="card"><table class="tbl"><tr><th>Nama</th><th>Email</th><th>Peran</th><th></th></tr>${DB.users.map(u=>`<tr><td>${e(u.nama)}</td><td>${e(u.email)}</td><td>${RL[u.role]}</td><td>${u.id==U.id?"":`<button class="btn d" onclick="delU('${u.id}')">Hapus</button>`}</td></tr>`).join("")}</table></div>
+<div class="card"><h3>Tambah pengguna</h3><input id="un" placeholder="Nama"><input id="ue" placeholder="Email"><input id="up" placeholder="Kata sandi" value="demo123"><select id="ur"><option value="peserta">Peserta</option><option value="instruktur">Instruktur</option><option value="admin">Admin</option></select><button class="btn" onclick="addU()">Tambah</button></div>`}
+function addU(){const n=val("un"),m=val("ue").toLowerCase();if(!n||!m)return;if(DB.users.some(x=>x.email==m))return alert("Email sudah ada.");const r=val("ur");DB.users.push({id:r+uid(),nama:n,email:m,pass:val("up")||"demo123",role:r});save();render()}
+function delU(id){if(confirm("Hapus pengguna?")){DB.users=DB.users.filter(u=>u.id!=id);save();render()}}
+function aCourses(){return`<h2>Semua Kelas</h2><div class="card"><table class="tbl"><tr><th>Judul</th><th>Instruktur</th><th>Modul</th><th>Soal</th><th></th></tr>${DB.courses.map(c=>`<tr><td>${e(c.judul)}</td><td>${e(UN(c.ins))}</td><td>${c.mods.length}</td><td>${c.qs.length}</td><td><button class="btn d" onclick="delC('${c.id}')">Hapus</button></td></tr>`).join("")}</table></div>`}
+function delC(id){if(confirm("Hapus kelas?")){DB.courses=DB.courses.filter(c=>c.id!=id);save();render()}}
+load();render();
+</script>
+</body>
+</html>
